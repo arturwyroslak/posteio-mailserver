@@ -1,0 +1,33 @@
+# Dockerfile dla VPS/Local z persistent storage
+# Użyj tego jeśli masz problemy z lock files po restartach
+
+FROM analogic/poste.io:latest
+
+# Timezone
+ENV TZ=Europe/Warsaw
+
+# Optymalizacja zasobów
+ENV DISABLE_CLAMAV=TRUE
+
+# Port konfigurowalny (domyślnie 80 dla VPS)
+ENV HTTP_PORT=80 \
+    HTTPS=ON
+
+# Utworzenie katalogu danych
+RUN mkdir -p /data && \
+    chmod 777 /data
+
+# Eksponowanie wszystkich portów pocztowych
+EXPOSE 25 80 110 143 443 465 587 993 995 4190
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${HTTP_PORT}/ || exit 1
+
+# Kopiowanie startup wrapper script (cleanup lock files)
+COPY startup-wrapper.sh /startup-wrapper.sh
+RUN chmod +x /startup-wrapper.sh
+
+# Użycie wrapper - czyści lock files przed startem
+# Przydatne gdy volume /data jest persistent między restartami
+CMD ["/startup-wrapper.sh"]
