@@ -37,5 +37,6 @@ echo "  3. Configure your domain and mailboxes"
 echo "===================================="
 echo ""
 
-# Uruchomienie Poste.io
-exec /docker-entrypoint.sh
+# Uruchomienie Poste.io przez s6 supervisor (natywny system Poste.io)
+# Poste.io używa s6-overlay jako init system
+exec /init
