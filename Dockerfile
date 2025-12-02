@@ -30,9 +30,6 @@ EXPOSE 7860 25 587 143 993
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:7860/ || exit 1
 
-# Kopiowanie startup wrapper script
-COPY startup-wrapper.sh /startup-wrapper.sh
-RUN chmod +x /startup-wrapper.sh
-
-# Użycie wrapper script - czyści lock files przed startem
-CMD ["/startup-wrapper.sh"]
+# Użycie natywnego init system Poste.io (s6-overlay)
+# HF Spaces ma czysty kontener przy każdym starcie - nie potrzeba cleanup
+CMD ["/init"]
