@@ -1,0 +1,33 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Data directories (don't include in image)
+data/
+*.db
+*.sqlite
