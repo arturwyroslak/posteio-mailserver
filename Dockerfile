@@ -1,43 +1,35 @@
 FROM analogic/poste.io:latest
 
-# Wymagane dla Hugging Face Spaces
+# Konfiguracja dla Hugging Face Spaces
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
 
-# Konfiguracja timezone
+# Timezone
 ENV TZ=Europe/Warsaw
 
-# Wyłączenie funkcji wymagających więcej zasobów
-ENV DISABLE_CLAMAV=TRUE \
-    DISABLE_RSPAMD=FALSE
+# Optymalizacja zasobów - wyłączenie ClamAV (anti-virus)
+ENV DISABLE_CLAMAV=TRUE
 
 # Port dla Hugging Face Spaces (webmail/admin interface)
 ENV HTTP_PORT=7860 \
     HTTPS=OFF
 
-# Tworzenie użytkownika user (wymagane przez HF)
-RUN useradd -m -u 1000 user || true
-
-# Utworzenie katalogu danych
+# Utworzenie katalogu danych (wymagane przez Poste.io)
 RUN mkdir -p /data && \
-    chmod 755 /data
-
-WORKDIR /home/user/app
+    chmod 777 /data
 
 # Eksponowanie portów
-# Port 7860 - główny port dla HF Spaces (webmail + admin)
-# Port 25 - SMTP (jeśli HF Spaces to umożliwia)
-# Port 587 - Submission port
-# Port 143 - IMAP
-# Port 993 - IMAPS
+# 7860 - HTTP webmail + admin panel (główny dla HF Spaces)
+# 25   - SMTP (odbieranie poczty)
+# 587  - SMTP Submission (wysyłanie poczty)
+# 143  - IMAP (dostęp do skrzynek)
+# 993  - IMAPS (bezpieczny IMAP)
 EXPOSE 7860 25 587 143 993
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:7860/ || exit 1
+# Healthcheck - sprawdzenie czy serwer działa
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:7860/ || exit 1
 
-# Skrypt startowy
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
+# Użycie natywnego init system Poste.io (s6-overlay)
+# Nie potrzebujemy custom start.sh - Poste.io ma własny system inicjalizacji
+CMD ["/init"]
