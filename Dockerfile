@@ -30,17 +30,9 @@ EXPOSE 7860 25 587 143 993
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:7860/ || exit 1
 
-# Skrypt cleanup - usuwanie starych lock files przed startem
-RUN echo '#!/bin/bash\n\
-set -e\n\
-echo "[Cleanup] Removing stale lock files and PIDs..."\n\
-rm -rf /data/log/s6/*/lock 2>/dev/null || true\n\
-rm -rf /run/*.pid 2>/dev/null || true\n\
-rm -rf /var/run/*.pid 2>/dev/null || true\n\
-rm -rf /run/login/* 2>/dev/null || true\n\
-echo "[Cleanup] Done. Starting Poste.io..."\n\
-exec /init' > /startup-wrapper.sh && \
-    chmod +x /startup-wrapper.sh
+# Kopiowanie startup wrapper script
+COPY startup-wrapper.sh /startup-wrapper.sh
+RUN chmod +x /startup-wrapper.sh
 
-# Użycie wrapper script zamiast bezpośrednio /init
+# Użycie wrapper script - czyści lock files przed startem
 CMD ["/startup-wrapper.sh"]
